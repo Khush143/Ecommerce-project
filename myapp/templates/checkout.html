@@ -1,0 +1,191 @@
+{% extends 'header.html' %}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<script src="https://js.stripe.com/v3/"></script>
+ 
+    </head>
+	<body>
+		<!-- BREADCRUMB -->
+		<div id="breadcrumb" class="section">
+			<!-- container -->
+			<div class="container">
+				<!-- row -->
+				<div class="row">
+					<div class="col-md-12">
+						<h3 class="breadcrumb-header">Checkout</h3>
+						<ul class="breadcrumb-tree">
+							<li><a href="#">Home</a></li>
+							<li class="active">Checkout</li>
+						</ul>
+					</div>
+				</div>
+				<!-- /row -->
+			</div>
+			<!-- /container -->
+		</div>
+		<!-- /BREADCRUMB -->
+
+		<!-- SECTION -->
+		<div class="section">
+			<!-- container -->
+			<div class="container">
+				<!-- row -->
+				<div class="row">
+
+					<div class="col-md-7">
+						<!-- Billing Details -->
+						<div class="billing-details">
+							<div class="section-title">
+								<h3 class="title">Billing address</h3>
+							</div>
+							<div class="form-group">
+								<input class="input" type="text" name="first-name" value="{{user.fname}}">
+							</div>
+							<div class="form-group">
+								<input class="input" type="text" name="last-name"  value="{{user.lname}}">
+							</div>
+							<div class="form-group">
+								<input class="input" type="email" name="email"  value="{{user.email}}">
+							</div>
+							<div class="form-group">
+								<input class="input" type="text" name="address"  value="{{user.address}}">
+							</div>
+							<div class="form-group">
+								<input class="input" type="text" name="city"  value="{{user.city}}">
+							</div>
+							
+							<div class="form-group">
+								<input class="input" type="text" name="zip-code"  value="{{user.zipcode}}">
+							</div>
+							<div class="form-group">
+								<input class="input" type="text" name="mobile"  value="{{user.mobile}}">
+							</div>
+							
+						</div>
+						<!-- /Billing Details -->
+
+						
+
+					</div>
+
+					<!-- Order Details -->
+					<div class="col-md-5 order-details">
+						<div class="section-title text-center">
+							<h3 class="title">Your Order</h3>
+						</div>
+						<div class="order-summary">
+							<div class="order-col">
+								<div><strong>PRODUCT</strong></div>
+								<div><strong>TOTAL</strong></div>
+							</div>
+							<div class="order-products">
+								{% for i in carts %}
+								<div class="order-col">
+									<div>{{i.product_qty}}x {{i.product.product_name}}</div>
+									<div>{{i.total_price}}</div>
+								</div>
+								{% endfor %}
+							</div>
+							<div class="order-col">
+								<div>Shiping</div>
+								<div><strong>FREE</strong></div>
+							</div>
+							<div class="order-col">
+								<div><strong>TOTAL</strong></div>
+								<div><strong class="order-total">{{net_price}}</strong></div>
+							</div>
+						</div>
+						
+					
+						<form method="post">
+							<input type="hidden" id="net_price" name="amount" value="{{net_price}}">
+							<button type="button" class="btn btn-lg btn-primary" id="checkout-button">Checkout</button>
+						</form>
+					</div>
+					<!-- /Order Details -->
+				</div>
+				<!-- /row -->
+			</div>
+			<!-- /container -->
+		</div>
+		<!-- /SECTION -->
+
+		<!-- NEWSLETTER -->
+		<div id="newsletter" class="section">
+			<!-- container -->
+			<div class="container">
+				<!-- row -->
+				<div class="row">
+					<div class="col-md-12">
+						<div class="newsletter">
+							<p>Sign Up for the <strong>NEWSLETTER</strong></p>
+							<form>
+								<input class="input" type="email" placeholder="Enter Your Email">
+								<button class="newsletter-btn"><i class="fa fa-envelope"></i> Subscribe</button>
+							</form>
+							<ul class="newsletter-follow">
+								<li>
+									<a href="#"><i class="fa fa-facebook"></i></a>
+								</li>
+								<li>
+									<a href="#"><i class="fa fa-twitter"></i></a>
+								</li>
+								<li>
+									<a href="#"><i class="fa fa-instagram"></i></a>
+								</li>
+								<li>
+									<a href="#"><i class="fa fa-pinterest"></i></a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+				<!-- /row -->
+			</div>
+			<!-- /container -->
+		</div>
+		<!-- /NEWSLETTER -->
+		<script type="text/javascript">
+
+		var stripe = Stripe('pk_test_51NuZUbSAOpGXz7ACOj4inW4A1gxhQNQns6uHyv6qt55IJRqNVnKmmuZyyV9fGDKO8bx3LB0nFm72EfISBAADcUOP004TIY65tj');
+ var checkoutButton = document.getElementById('checkout-button');
+
+ checkoutButton.addEventListener('click', function() {
+ 	alert("Hello");
+ // Create a new Checkout Session using the server-side endpoint you
+ // created in step 3.
+ 
+ fetch('/create-checkout-session/', {
+ method: 'POST',
+	headers:{
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest', //Necessary to work with request.is_ajax()
+
+	},
+    body: JSON.stringify({'post_data':'{{net_price}}'})
+ })
+ .then(function(response) {
+ return response.json();
+ })
+ .then(function(session) {
+ return stripe.redirectToCheckout({ sessionId: session.id });
+ })
+ .then(function(result) {
+ // If `redirectToCheckout` fails due to a browser or network
+ // error, you should display the localized error message to your
+ // customer using `error.message`.
+ if (result.error) {
+ alert(result.error.message);
+ }
+ })
+ .catch(function(error) {
+ console.error('Error:', error);
+ });
+ });
+ </script>
+	</body>
+</html>
+{% endblock %}
